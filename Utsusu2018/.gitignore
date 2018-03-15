@@ -1,6 +1,5 @@
 *.db
 Temp/
-*.rc
 *.filters
 ipch/
 Debug/
