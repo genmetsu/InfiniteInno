@@ -34,6 +34,9 @@ namespace basecross{
 	//--------------------------------------------------------------------------------------
 	class EnemyObject : public GameObject {
 		Vec3 m_StartPos;
+        float m_Speed;
+		float m_Radian;
+		float m_Radius;
 	public:
 		//\’z‚Æ”jŠü
 		EnemyObject(const shared_ptr<Stage>& StagePtr, const Vec3& StartPos);
@@ -42,6 +45,8 @@ namespace basecross{
 		virtual void OnCreate() override;
 		//‘€ì
 		virtual void OnUpdate() override;
+
+		void Move();
 	};
 
 }

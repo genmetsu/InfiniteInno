@@ -78,11 +78,26 @@ namespace basecross{
 		PtrDraw->SetMeshResource(L"DEFAULT_SPHERE");
 		//PtrDraw->SetTextureResource(L"WALL_TX");
 
+		m_Speed = 0.5f;
+		m_Radian = 0;
+		m_Radius = 5.0f;
+
 		AddTag(L"Enemy");
 	}
 	//XVˆ—
 	void EnemyObject::OnUpdate() {
+		Move();
+	}
 
+	void EnemyObject::Move(){
+		auto PtrTrans = GetComponent<Transform>();
+		Vec3 Pos = PtrTrans->GetPosition();
+		
+		Pos.x = m_StartPos.x + cosf(m_Radian) * m_Radius;
+		Pos.z = m_StartPos.z  + sinf(m_Radian) * m_Radius;
+		m_Radian += m_Speed * 3.1415f / 180;
+
+		PtrTrans->SetPosition(Pos);
 	}
 
 }
