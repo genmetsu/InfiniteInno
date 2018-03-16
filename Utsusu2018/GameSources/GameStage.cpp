@@ -122,6 +122,11 @@ namespace basecross {
 		}
 	}
 
+	void GameStage::CreateTarget() {
+		AddGameObject<TargetObject>(Vec3(5.0f, 20.0f, 5.0f),
+			Vec3(0.0f, 0.0f, 0.0f),
+			Vec3(0.0f, 10.0f, 45.0f));
+	}
 	void GameStage::OnCreate() {
 		try {
 			//ƒrƒ…[‚Æƒ‰ƒCƒg‚Ìì¬
@@ -132,6 +137,8 @@ namespace basecross {
 			CreatePlayer();
 			//“G‚Ìì¬
 			CreateEnemy();
+			//ï¿½^ï¿½[ï¿½Qï¿½bï¿½gï¿½Ìì¬
+			CreateTarget();
 		}
 		catch (...) {
 			throw;
