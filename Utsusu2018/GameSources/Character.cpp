@@ -123,9 +123,16 @@ namespace basecross{
 		PtrDraw->SetMeshResource(L"DEFAULT_SPHERE");
 		//PtrDraw->SetTextureResource(L"WALL_TX");
 
-		m_Speed = 0.5f;
+		m_SpeedMax = 3.0f;
+		m_SpeedMin = 1.0f;
+		m_RadiusMax = 6.0f;
+		m_RadiusMin = 2.0f;
+
+		//m_SpeedMaxが最大値と勘違する。実際出てくる数値はm_SpeedMinと足した数値なので違う
+
+		m_Speed = Util::RandZeroToOne() * m_SpeedMax + m_SpeedMin;
 		m_Radian = 0;
-		m_Radius = 5.0f;
+		m_Radius = Util::RandZeroToOne() * m_RadiusMax + m_RadiusMin;
 
 		//Enemyというグループに組み込む
 		auto Group = GetStage()->GetSharedObjectGroup(L"Enemy");
@@ -141,10 +148,11 @@ namespace basecross{
 	void EnemyObject::Move(){
 		auto PtrTrans = GetComponent<Transform>();
 		Vec3 Pos = PtrTrans->GetPosition();
-		
+
 		Pos.x = m_StartPos.x + cosf(m_Radian) * m_Radius;
 		Pos.z = m_StartPos.z  + sinf(m_Radian) * m_Radius;
 		m_Radian += m_Speed * 3.1415f / 180;
+
 
 		PtrTrans->SetPosition(Pos);
 	}
