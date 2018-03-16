@@ -109,6 +109,10 @@ namespace basecross {
 	}
 
 	void GameStage::CreateEnemy() {
+
+		CreateSharedObjectGroup(L"Enemy");
+		CreateSharedObjectGroup(L"Infected");
+
 		//配列の初期化
 		vector<Vec3> Vec = {
 			Vec3(20.0f, 0.25f, 20.0f),
@@ -122,6 +126,18 @@ namespace basecross {
 		}
 	}
 
+	void GameStage::CreateTarget() {
+		AddGameObject<TargetObject>(Vec3(5.0f, 20.0f, 5.0f),
+			Vec3(0.0f, 0.0f, 0.0f),
+			Vec3(0.0f, 10.0f, 45.0f));
+	}
+
+	void GameStage::CreateParticle() {
+		auto MultiSparkPtr = AddGameObject<MultiSpark>();
+		//共有オブジェクトにスパークを登録
+		SetSharedGameObject(L"MultiSpark", MultiSparkPtr);
+	}
+
 	void GameStage::OnCreate() {
 		try {
 			//ビューとライトの作成
@@ -132,6 +148,10 @@ namespace basecross {
 			CreatePlayer();
 			//敵の作成
 			CreateEnemy();
+			//ターゲットの作成
+			CreateTarget();
+
+			CreateParticle();
 		}
 		catch (...) {
 			throw;

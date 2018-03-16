@@ -50,6 +50,51 @@ namespace basecross{
 	}
 
 	//--------------------------------------------------------------------------------------
+	//	class TargetObject : public GameObject;
+	//	用途: 感染したキャラクターの目標となる建物
+	//--------------------------------------------------------------------------------------
+	//構築と破棄
+	TargetObject::TargetObject(const shared_ptr<Stage>& StagePtr,
+		const Vec3& Scale,
+		const Vec3& Rotation,
+		const Vec3& Position
+	) :
+		GameObject(StagePtr),
+		m_Scale(Scale),
+		m_Rotation(Rotation),
+		m_Position(Position)
+	{
+	}
+	TargetObject::~TargetObject() {}
+
+	//初期化
+	void TargetObject::OnCreate() {
+		auto PtrTransform = GetComponent<Transform>();
+
+		PtrTransform->SetScale(m_Scale);
+		PtrTransform->SetRotation(m_Rotation);
+		PtrTransform->SetPosition(m_Position);
+
+		//衝突判定
+		auto PtrObb = AddComponent<CollisionObb>();
+		PtrObb->SetFixed(true);
+
+		//影をつける
+		auto ShadowPtr = AddComponent<Shadowmap>();
+		ShadowPtr->SetMeshResource(L"DEFAULT_CUBE");
+
+		auto PtrDraw = AddComponent<BcPNTStaticDraw>();
+		PtrDraw->SetFogEnabled(false);
+		PtrDraw->SetMeshResource(L"DEFAULT_CUBE");
+		PtrDraw->SetOwnShadowActive(true);
+		PtrDraw->SetTextureResource(L"WALL_TX");
+	}
+
+	void TargetObject::OnUpdate() {
+
+	}
+
+	//--------------------------------------------------------------------------------------
 	//	class EnemyObject : public GameObject;
 	//	用途: 一般的な敵
 	//--------------------------------------------------------------------------------------
@@ -81,6 +126,10 @@ namespace basecross{
 		m_Speed = 0.5f;
 		m_Radian = 0;
 		m_Radius = 5.0f;
+
+		//Enemyというグループに組み込む
+		auto Group = GetStage()->GetSharedObjectGroup(L"Enemy");
+		Group->IntoGroup(GetThis<EnemyObject>());
 
 		AddTag(L"Enemy");
 	}

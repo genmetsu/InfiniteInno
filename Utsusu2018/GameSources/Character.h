@@ -29,6 +29,31 @@ namespace basecross{
 	};
 
 	//--------------------------------------------------------------------------------------
+	//	class TargetObject : public GameObject;
+	//	用途: 感染したキャラクターの目標となる建物
+	//--------------------------------------------------------------------------------------
+	class TargetObject : public GameObject {
+		Vec3 m_Scale;
+		Vec3 m_Rotation;
+		Vec3 m_Position;
+
+		//耐久度
+		float m_HP;
+	public:
+		//構築と破棄
+		TargetObject(const shared_ptr<Stage>& StagePtr,
+			const Vec3& Scale,
+			const Vec3& Rotation,
+			const Vec3& Position
+		);
+		virtual ~TargetObject();
+		//初期化
+		virtual void OnCreate() override;
+		//更新
+		virtual void OnUpdate() override;
+	};
+
+	//--------------------------------------------------------------------------------------
 	//	class EnemyObject : public GameObject;
 	//	用途: 一般の敵
 	//--------------------------------------------------------------------------------------

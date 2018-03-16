@@ -50,7 +50,7 @@ namespace basecross{
 
 		auto PtrDraw = AddComponent<BcPNTStaticDraw>();
 		PtrDraw->SetMeshResource(L"DEFAULT_SPHERE");
-		PtrDraw->SetDiffuse(Col4(0, 0, 1, 1));
+		PtrDraw->SetDiffuse(Col4(1.0f, 0, 1.0f, 1.0f));
 
 		auto Group = GetStage()->GetSharedObjectGroup(L"AttackBall");
 		Group->IntoGroup(GetThis<AttackBall>());
@@ -59,6 +59,7 @@ namespace basecross{
 		SetDrawActive(false);
 		SetUpdateActive(false);
 
+		AddTag(L"Bullet");
 	}
 
 	void AttackBall::OnUpdate() {
@@ -66,12 +67,32 @@ namespace basecross{
 	}
 
 	void AttackBall::OnCollision(vector<shared_ptr<GameObject>>& OtherVec) {
+		//エフェクト放出
+		auto PtrSpark = GetStage()->GetSharedGameObject<MultiSpark>(L"MultiSpark", false);
+		if (PtrSpark) {
+			PtrSpark->InsertSpark(GetComponent<Transform>()->GetPosition());
+		}
+		//自信を消す
 		auto PtrTransform = GetComponent<Transform>();
 		PtrTransform->SetScale(0.1f, 0.1f, 0.1f);
 		PtrTransform->SetRotation(0, 0, 0);
 		PtrTransform->SetPosition(0, 0, 0);
 		SetDrawActive(false);
 		SetUpdateActive(false);
+		//衝突判定
+		for (auto v : OtherVec) {
+			if (v->FindTag(L"Enemy")) {
+				v->RemoveTag(L"Enemy");
+				v->AddTag(L"Infected");
+
+				//色を変える
+				auto PtrDraw = v->GetComponent<BcPNTStaticDraw>();
+				PtrDraw->SetDiffuse(Col4(1.0f, 0, 1.0f, 1.0f));
+
+				auto Group = GetStage()->GetSharedObjectGroup(L"Infected");
+				Group->IntoGroup(v);
+			}
+		}
 	}
 
 	//--------------------------------------------------------------------------------------

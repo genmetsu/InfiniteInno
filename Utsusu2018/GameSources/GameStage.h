@@ -19,6 +19,10 @@ namespace basecross {
 		void CreatePlayer();
 		//敵の作成
 		void CreateEnemy();
+		//ターゲットの作成
+		void CreateTarget();
+		//パーティクルの作成
+		void CreateParticle();
 	public:
 		//構築と破棄
 		GameStage() :Stage() {}
