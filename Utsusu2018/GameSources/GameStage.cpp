@@ -95,8 +95,8 @@ namespace basecross {
 	void GameStage::CreatePlayer() {
 
 		CreateSharedObjectGroup(L"AttackBall");
-		//アタックボールは50個用意する
-		for (int i = 0; i < 50; i++) {
+		//アタックボールは10個用意する
+		for (int i = 0; i < 10; i++) {
 			AddGameObject<AttackBall>();
 		}
 
@@ -115,10 +115,10 @@ namespace basecross {
 
 		//配列の初期化
 		vector<Vec3> Vec = {
-			Vec3(20.0f, 0.25f, 20.0f),
-			Vec3(-20.0f, 0.25f, -20.0f),
-			Vec3(20.0f, 0.25f, -20.0f),
-			Vec3(-20.0f, 0.25f, 20.0f)
+			Vec3(1.0f, 0.25f, 1.0f),
+			Vec3(-1.0f, 0.25f, -1.0f),
+			Vec3(1.0f, 0.25f, -1.0f),
+			Vec3(-1.0f, 0.25f, 1.0f)
 		};
 		//オブジェクトの作成
 		for (auto v : Vec) {
@@ -134,8 +134,9 @@ namespace basecross {
 
 	void GameStage::CreateParticle() {
 		auto MultiSparkPtr = AddGameObject<MultiSpark>();
-		//共有オブジェクトにスパークを登録
 		SetSharedGameObject(L"MultiSpark", MultiSparkPtr);
+		auto InfectParticlePtr = AddGameObject<InfectParticle>();
+		SetSharedGameObject(L"InfectParticle", InfectParticlePtr);
 	}
 
 	void GameStage::OnCreate() {
