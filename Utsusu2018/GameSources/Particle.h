@@ -19,5 +19,20 @@ namespace basecross {
 		void InsertSpark(const Vec3& Pos);
 	};
 
+	//--------------------------------------------------------------------------------------
+	//class InfectParticle : public MultiParticle;
+	//用途: 感染している際のパーティクル
+	//--------------------------------------------------------------------------------------
+	class InfectParticle : public MultiParticle {
+	public:
+		//構築と破棄
+		InfectParticle(shared_ptr<Stage>& StagePtr);
+		virtual ~InfectParticle();
+		//初期化
+		virtual void OnCreate() override;
+		//更新
+		virtual void OnUpdate() override;
+		void InsertInfect(const Vec3& Pos, const float Length);
+	};
 
 }

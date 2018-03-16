@@ -82,15 +82,19 @@ namespace basecross{
 		//衝突判定
 		for (auto v : OtherVec) {
 			if (v->FindTag(L"Enemy")) {
-				v->RemoveTag(L"Enemy");
-				v->AddTag(L"Infected");
+				if (!v->FindTag(L"Infected")) {
+					v->AddTag(L"Infected");
+					auto Group = GetStage()->GetSharedObjectGroup(L"Infected");
+					Group->IntoGroup(v);
+				}
 
-				//色を変える
-				auto PtrDraw = v->GetComponent<BcPNTStaticDraw>();
-				PtrDraw->SetDiffuse(Col4(1.0f, 0, 1.0f, 1.0f));
-
-				auto Group = GetStage()->GetSharedObjectGroup(L"Infected");
-				Group->IntoGroup(v);
+				auto PtrEnemy = dynamic_pointer_cast<EnemyObject>(v);
+				float NowPercent = PtrEnemy->GetInfectedPercent();
+				float NewPercent = NowPercent + 20.0f;
+				if (NewPercent > 100.0f) {
+					NewPercent = 100.0f;
+				}
+				PtrEnemy->SetInfectedPercent(NewPercent);
 			}
 		}
 	}
@@ -109,7 +113,7 @@ namespace basecross{
 
 		//初期位置などの設定
 		auto Ptr = AddComponent<Transform>();
-		Ptr->SetScale(0.5f, 0.5f, 0.5f);	//直径25センチの球体
+		Ptr->SetScale(0.5f, 0.5f, 0.5f);
 		Ptr->SetRotation(0.0f, 0.0f, 0.0f);
 		Ptr->SetPosition(0, 0.125f, 0);
 
