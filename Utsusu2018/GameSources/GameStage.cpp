@@ -109,6 +109,10 @@ namespace basecross {
 	}
 
 	void GameStage::CreateEnemy() {
+
+		CreateSharedObjectGroup(L"Enemy");
+		CreateSharedObjectGroup(L"Infected");
+
 		//”z—ñ‚Ì‰Šú‰»
 		vector<Vec3> Vec = {
 			Vec3(20.0f, 0.25f, 20.0f),
@@ -127,6 +131,13 @@ namespace basecross {
 			Vec3(0.0f, 0.0f, 0.0f),
 			Vec3(0.0f, 10.0f, 45.0f));
 	}
+
+	void GameStage::CreateParticle() {
+		auto MultiSparkPtr = AddGameObject<MultiSpark>();
+		//‹¤—LƒIƒuƒWƒFƒNƒg‚ÉƒXƒp[ƒN‚ğ“o˜^
+		SetSharedGameObject(L"MultiSpark", MultiSparkPtr);
+	}
+
 	void GameStage::OnCreate() {
 		try {
 			//ƒrƒ…[‚Æƒ‰ƒCƒg‚Ìì¬
@@ -137,8 +148,10 @@ namespace basecross {
 			CreatePlayer();
 			//“G‚Ìì¬
 			CreateEnemy();
-			//ï¿½^ï¿½[ï¿½Qï¿½bï¿½gï¿½Ìì¬
+			//ƒ^[ƒQƒbƒg‚Ìì¬
 			CreateTarget();
+
+			CreateParticle();
 		}
 		catch (...) {
 			throw;
