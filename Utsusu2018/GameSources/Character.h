@@ -62,6 +62,11 @@ namespace basecross{
         float m_Speed;
 		float m_Radian;
 		float m_Radius;
+		float m_SpeedMax;
+		float m_SpeedMin;
+		float m_RadiusMax;
+		float m_RadiusMin;
+
 	public:
 		//\’z‚Æ”jŠü
 		EnemyObject(const shared_ptr<Stage>& StagePtr, const Vec3& StartPos);
