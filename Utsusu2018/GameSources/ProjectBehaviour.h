@@ -21,11 +21,6 @@ namespace basecross {
 				if (CntlVec[0].wPressedButtons & XINPUT_GAMEPAD_RIGHT_SHOULDER) {
 					Obj->OnPushRightSoulder();
 				}
-				//Bボタン
-				else if (CntlVec[0].wPressedButtons & XINPUT_GAMEPAD_B) {
-					Obj->OnPushB();
-				}
-
 			}
 		}
 	};
@@ -220,8 +215,6 @@ namespace basecross {
 		*/
 		//--------------------------------------------------------------------------------------
 		virtual void SetAt(float x, float y, float z)override;
-
-
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief 更新処理

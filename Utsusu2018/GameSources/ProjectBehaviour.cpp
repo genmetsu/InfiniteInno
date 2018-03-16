@@ -42,13 +42,13 @@ namespace basecross {
 			m_TargetToAt(0, 0, 0),
 			m_RadY(0.5f),
 			m_RadXZ(0),
-			m_CameraUpDownSpeed(0.5f),
-			m_CameraUnderRot(0.1f),
-			m_ArmLen(5.0f),
+			m_CameraUpDownSpeed(2.0f),
+			m_CameraUnderRot(0.0f),
+			m_ArmLen(7.0f),
 			m_MaxArm(7.0f),
 			m_MinArm(2.0f),
 			m_RotSpeed(1.0f),
-			m_ZoomSpeed(0.1f),
+			m_ZoomSpeed(0.5f),
 			m_LRBaseMode(true),
 			m_UDBaseMode(true)
 		{}
@@ -198,29 +198,51 @@ namespace basecross {
 		//正規化しておく
 		ArmVec.normalize();
 		if (CntlVec[0].bConnected) {
-			//上下角度の変更
-			if (CntlVec[0].fThumbRY >= 0.1f || KeyData.m_bPushKeyTbl[VK_UP]) {
-				if (IsUDBaseMode()) {
-					pImpl->m_RadY += pImpl->m_CameraUpDownSpeed * ElapsedTime;
+			if (CntlVec[0].wButtons & XINPUT_GAMEPAD_LEFT_SHOULDER) {
+				//カメラ位置を寄る
+				pImpl->m_ArmLen -= pImpl->m_ZoomSpeed;
+				//角度を変更
+				pImpl->m_RadY -= 0.1f;
+				if (pImpl->m_ArmLen <= pImpl->m_MinArm) {
+					//m_MinArm以下近づかないようにする
+					pImpl->m_ArmLen = pImpl->m_MinArm;
 				}
-				else {
-					pImpl->m_RadY -= pImpl->m_CameraUpDownSpeed * ElapsedTime;
-				}
-			}
-			else if (CntlVec[0].fThumbRY <= -0.1f || KeyData.m_bPushKeyTbl[VK_DOWN]) {
-				if (IsUDBaseMode()) {
-					pImpl->m_RadY -= pImpl->m_CameraUpDownSpeed * ElapsedTime;
-				}
-				else {
-					pImpl->m_RadY += pImpl->m_CameraUpDownSpeed * ElapsedTime;
+				if (pImpl->m_RadY < 0.0f) {
+					pImpl->m_RadY = 0.0f;
 				}
 			}
-			if (pImpl->m_RadY > XM_PI * 4 / 9.0f) {
-				pImpl->m_RadY = XM_PI * 4 / 9.0f;
-			}
-			else if (pImpl->m_RadY <= pImpl->m_CameraUnderRot) {
-				//カメラが限界下に下がったらそれ以上下がらない
-				pImpl->m_RadY = pImpl->m_CameraUnderRot;
+			else {
+				//カメラ位置を引く
+				pImpl->m_ArmLen += pImpl->m_ZoomSpeed;
+				if (pImpl->m_ArmLen >= pImpl->m_MaxArm) {
+					//m_MaxArm以上離れないようにする
+					pImpl->m_ArmLen = pImpl->m_MaxArm;
+				}
+
+				//上下角度の変更
+				if (CntlVec[0].fThumbRY >= 0.1f || KeyData.m_bPushKeyTbl[VK_UP]) {
+					if (IsUDBaseMode()) {
+						pImpl->m_RadY += pImpl->m_CameraUpDownSpeed * ElapsedTime;
+					}
+					else {
+						pImpl->m_RadY -= pImpl->m_CameraUpDownSpeed * ElapsedTime;
+					}
+				}
+				else if (CntlVec[0].fThumbRY <= -0.1f || KeyData.m_bPushKeyTbl[VK_DOWN]) {
+					if (IsUDBaseMode()) {
+						pImpl->m_RadY -= pImpl->m_CameraUpDownSpeed * ElapsedTime;
+					}
+					else {
+						pImpl->m_RadY += pImpl->m_CameraUpDownSpeed * ElapsedTime;
+					}
+				}
+				if (pImpl->m_RadY > XM_PI * 4 / 9.0f) {
+					pImpl->m_RadY = XM_PI * 4 / 9.0f;
+				}
+				else if (pImpl->m_RadY <= pImpl->m_CameraUnderRot) {
+					//カメラが限界下に下がったらそれ以上下がらない
+					pImpl->m_RadY = pImpl->m_CameraUnderRot;
+				}
 			}
 			ArmVec.y = sin(pImpl->m_RadY);
 			//ここでY軸回転を作成
@@ -283,23 +305,6 @@ namespace basecross {
 				NewAt = Lerp::CalculateLerp(GetAt(), ToAt, 0, 1.0f, 1.0, Lerp::Linear);
 			}
 
-
-			if (CntlVec[0].wButtons & XINPUT_GAMEPAD_LEFT_SHOULDER) {
-				//カメラ位置を寄る
-				pImpl->m_ArmLen -= pImpl->m_ZoomSpeed * 5.0f;
-				if (pImpl->m_ArmLen <= pImpl->m_MinArm) {
-					//m_MinArm以下近づかないようにする
-					pImpl->m_ArmLen = pImpl->m_MinArm;
-				}
-			}
-			else {
-				//カメラ位置を引く
-				pImpl->m_ArmLen += pImpl->m_ZoomSpeed * 5.0f;
-				if (pImpl->m_ArmLen >= pImpl->m_MaxArm) {
-					//m_MaxArm以上離れないようにする
-					pImpl->m_ArmLen = pImpl->m_MaxArm;
-				}
-			}
 			////目指したい場所にアームの値と腕ベクトルでEyeを調整
 			bsm::Vec3 ToEye = NewAt + ArmVec * pImpl->m_ArmLen;
 			NewEye = Lerp::CalculateLerp(GetEye(), ToEye, 0, 1.0f, pImpl->m_ToTargetLerp, Lerp::Linear);
@@ -307,8 +312,6 @@ namespace basecross {
 		if (KeyData.m_bPressedKeyTbl[VK_LEFT]) {
 			int a = 0;
 		}
-
-
 
 		SetAt(NewAt);
 		SetEye(NewEye);
