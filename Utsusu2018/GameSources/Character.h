@@ -62,6 +62,10 @@ namespace basecross{
         float m_Speed;
 		float m_Radian;
 		float m_Radius;
+		//Š´õ”ÍˆÍ
+		float m_InfectionLength;
+		//Š´õ—¦,Å‘å100.0f
+		float m_InfectedPercent;
 	public:
 		//\’z‚Æ”jŠü
 		EnemyObject(const shared_ptr<Stage>& StagePtr, const Vec3& StartPos);
@@ -72,6 +76,27 @@ namespace basecross{
 		virtual void OnUpdate() override;
 
 		void Move();
+
+		//Š´õs“®
+		void Infect();
+
+		//Š´õ—¦‚É‚æ‚Á‚ÄF‚ğ•Ï‚¦‚é
+		void ColorChangeByInfection();
+
+		//Š´õ”ÍˆÍ‚Ìgetter,setter
+		float GetInfectionLength() {
+			return m_InfectionLength;
+		};
+		void SetInfectionLength(float value) {
+			m_InfectionLength = value;
+		}
+		//Š´õ—¦‚Ìgetter,setter
+		float GetInfectedPercent() {
+			return m_InfectedPercent;
+		};
+		void SetInfectedPercent(float value) {
+			m_InfectedPercent = value;
+		}
 	};
 
 }
