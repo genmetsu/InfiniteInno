@@ -65,16 +65,16 @@ namespace basecross {
 	}
 
 	void InfectParticle::InsertInfect(const Vec3& Pos, const float Length) {
-		auto ParticlePtr = InsertParticle((int)(Length + 1) * 4);
+		auto ParticlePtr = InsertParticle((int)(Length + 1) * 2);
 		ParticlePtr->SetEmitterPos(Pos);
 		ParticlePtr->SetTextureResource(L"SPARK_TX");
-		ParticlePtr->SetMaxTime(0.5f);
+		ParticlePtr->SetMaxTime(0.15f);
 		vector<ParticleSprite>& pSpriteVec = ParticlePtr->GetParticleSpriteVec();
 		for (auto& rParticleSprite : ParticlePtr->GetParticleSpriteVec()) {
 			rParticleSprite.m_LocalPos.x = Util::RandZeroToOne() * Length - (Length / 2.0f);
 			rParticleSprite.m_LocalPos.y = 0.0f;
 			rParticleSprite.m_LocalPos.z = Util::RandZeroToOne() * Length - (Length / 2.0f);
-			rParticleSprite.m_LocalScale = Vec2(0.6f, 0.6f);
+			rParticleSprite.m_LocalScale = Vec2(0.7f, 0.7f);
 			//各パーティクルの移動速度を指定
 			rParticleSprite.m_Velocity = Vec3(
 				rParticleSprite.m_LocalPos.x * 2.0f,
