@@ -47,7 +47,7 @@ namespace basecross {
 			m_ArmLen(7.0f),
 			m_MaxArm(7.0f),
 			m_MinArm(2.0f),
-			m_RotSpeed(1.0f),
+			m_RotSpeed(0.5f),
 			m_ZoomSpeed(0.5f),
 			m_LRBaseMode(true),
 			m_UDBaseMode(true)
@@ -198,7 +198,7 @@ namespace basecross {
 		//正規化しておく
 		ArmVec.normalize();
 		if (CntlVec[0].bConnected) {
-			if (CntlVec[0].wButtons & XINPUT_GAMEPAD_LEFT_SHOULDER) {
+			if ((CntlVec[0].wButtons & XINPUT_GAMEPAD_LEFT_SHOULDER) || CntlVec[0].bLeftTrigger > 0.0f) {
 				//カメラ位置を寄る
 				pImpl->m_ArmLen -= pImpl->m_ZoomSpeed;
 				//角度を変更
