@@ -46,7 +46,7 @@ namespace basecross{
 		PtrDraw->SetFogEnabled(false);
 		PtrDraw->SetMeshResource(L"DEFAULT_CUBE");
 		PtrDraw->SetOwnShadowActive(true);
-		PtrDraw->SetTextureResource(L"SKY_TX");
+		PtrDraw->SetTextureResource(L"GRASS_TX");
 	}
 
 	//--------------------------------------------------------------------------------------
@@ -103,7 +103,8 @@ namespace basecross{
 		GameObject(StagePtr),
 		m_StartPos(StartPos)
 	{
-		m_InfectionLength = 0.0f;
+		m_InfectionLength = 3.0f;
+		m_InfectedPercent = 0.0f;
 	}
 	EnemyObject::~EnemyObject() {}
 	//初期化
@@ -125,9 +126,9 @@ namespace basecross{
 		PtrDraw->SetMeshResource(L"DEFAULT_SPHERE");
 		//PtrDraw->SetTextureResource(L"WALL_TX");
 
-		m_SpeedMax = 3.0f;
-		m_SpeedMin = 1.0f;
-		m_RadiusMax = 6.0f;
+		m_SpeedMax = 0.4f;
+		m_SpeedMin = 0.1f;
+		m_RadiusMax = 3.0f;
 		m_RadiusMin = 2.0f;
 
 		//m_SpeedMaxが最大値と勘違する。実際出てくる数値はm_SpeedMinと足した数値なので違う
@@ -144,7 +145,12 @@ namespace basecross{
 	}
 	//更新処理
 	void EnemyObject::OnUpdate() {
-		Move();
+		if (m_InfectedPercent < 100.0f) {
+			Move();
+		}
+		else if (m_InfectedPercent >= 100.0f) {
+			ToTargetPoint();
+		}
 		ColorChangeByInfection();
 		Infect();
 	}
@@ -155,10 +161,52 @@ namespace basecross{
 
 		Pos.x = m_StartPos.x + cosf(m_Radian) * m_Radius;
 		Pos.z = m_StartPos.z  + sinf(m_Radian) * m_Radius;
-		m_Radian += m_Speed * 3.1415f / 180;
-
+		m_Radian += m_Speed * 3.1415f / 180.0f;
 
 		PtrTrans->SetPosition(Pos);
+	}
+
+	void EnemyObject::ToTargetPoint() {
+		auto PtrPoint = GetStage()->GetSharedGameObject<FollowerTargetPoint>(L"FollowerTargetPoint");
+		if (PtrPoint->GetDrawActive()) {
+			Vec3 PointPos = PtrPoint->GetComponent<Transform>()->GetWorldPosition();
+			Vec3 MyPos = GetComponent<Transform>()->GetPosition();
+			Vec3 MoveVec = PointPos - MyPos;
+			MoveVec.y = 0.0f;
+			MoveVec.normalize();
+			auto PtrRigid = GetComponent<Rigidbody>();
+			PtrRigid->SetVelocity(MoveVec * 2.0f);
+		}
+		else {
+			ToInfectMove();
+		}
+	}
+
+	//感染率が100未満の一番近い敵に近づく処理
+	void EnemyObject::ToInfectMove() {
+		float distance = 0.0f;
+		Vec3 MoveVec = Vec3(0);
+		auto& GroupVec = GetStage()->GetSharedObjectGroup(L"Enemy")->GetGroupVector();
+		for (auto& v : GroupVec) {
+			auto PtrEnemy = dynamic_pointer_cast<EnemyObject>(v.lock());
+			if (PtrEnemy->GetInfectedPercent() < 100.0f) {
+				float NowDis = (PtrEnemy->GetComponent<Transform>()->GetPosition() - GetComponent<Transform>()->GetPosition()).length();
+				//最初の初期化
+				if (distance == 0.0f) {
+					distance = NowDis;
+					MoveVec = PtrEnemy->GetComponent<Transform>()->GetPosition() - GetComponent<Transform>()->GetPosition();
+					MoveVec.normalize();
+				}
+				//最短距離を更新する
+				else if (distance > NowDis) {
+					distance = NowDis;
+					MoveVec = PtrEnemy->GetComponent<Transform>()->GetPosition() - GetComponent<Transform>()->GetPosition();
+					MoveVec.normalize();
+				}
+			}
+		}
+		auto PtrRigid = GetComponent<Rigidbody>();
+		PtrRigid->SetVelocity(MoveVec * 2.0f);
 	}
 
 	void EnemyObject::ColorChangeByInfection() {
@@ -171,18 +219,18 @@ namespace basecross{
 			//エフェクト放出
 			auto PtrSpark = GetStage()->GetSharedGameObject<InfectParticle>(L"InfectParticle", false);
 			if (PtrSpark) {
-				PtrSpark->InsertInfect(GetComponent<Transform>()->GetPosition(), m_InfectedPercent / 100.0f);
+				PtrSpark->InsertInfect(GetComponent<Transform>()->GetPosition(), m_InfectedPercent / 100.0f * m_InfectionLength);
 			}
 
 			//接近した相手の感染率を上げる
+			auto PtrTrans = GetComponent<Transform>();
+			Vec3 MyPos = PtrTrans->GetPosition();
 			auto& EnemyGroup = GetStage()->GetSharedObjectGroup(L"Enemy");
 			for (auto& v : EnemyGroup->GetGroupVector()) {
 				//距離を取る
 				Vec3 EnemyPos = v.lock()->GetComponent<Transform>()->GetPosition();
-				auto PtrTrans = GetComponent<Transform>();
-				Vec3 MyPos = PtrTrans->GetPosition();
 				float length = (EnemyPos - MyPos).length();
-				if (length <= m_InfectedPercent / 100.0f) {
+				if (length <= m_InfectedPercent / 100.0f * m_InfectionLength) {
 					auto PtrEnemy = dynamic_pointer_cast<EnemyObject>(v.lock());
 					float NowPercent = PtrEnemy->GetInfectedPercent();
 					float NewPercent = NowPercent + 0.1f;
@@ -192,9 +240,20 @@ namespace basecross{
 					PtrEnemy->SetInfectedPercent(NewPercent);
 				}
 			}
+			auto PtrTarget = GetStage()->GetSharedGameObject<TargetObject>(L"TargetObject");
+			Vec3 TargetPos = PtrTarget->GetComponent<Transform>()->GetPosition();
+			float TargetLength = (TargetPos - MyPos).length();
+			if (TargetLength <= 13.0f) {
+				TargetPos.y -= 0.002f;
+				PtrTarget->GetComponent<Transform>()->SetPosition(TargetPos);
+			}
+
 			//自身の感染率を上げる
 			if (m_InfectedPercent < 100.0f) {
 				m_InfectedPercent += 0.05f;
+			}
+			if (m_InfectedPercent > 100.0f) {
+				m_InfectedPercent = 100.0f;
 			}
 		}
 	}

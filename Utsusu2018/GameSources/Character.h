@@ -84,11 +84,17 @@ namespace basecross{
 
 		void Move();
 
-		//感染行動
+		//周りに感染させる
 		void Infect();
+
+		//感染させる移動
+		void ToInfectMove();
 
 		//感染率によって色を変える
 		void ColorChangeByInfection();
+
+		//プレイヤーの指示した場所に向かう処理
+		void ToTargetPoint();
 
 		//感染範囲のgetter,setter
 		float GetInfectionLength() {
