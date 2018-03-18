@@ -31,6 +31,15 @@ namespace basecross{
 		strTexture = DataDir + L"number.png";
 		App::GetApp()->RegisterTexture(L"NUMBER_TX", strTexture);
 
+		strTexture = DataDir + L"grass256.png";
+		App::GetApp()->RegisterTexture(L"GRASS_TX", strTexture);
+
+		//プレート用
+		strTexture = DataDir + L"gray.png";
+		App::GetApp()->RegisterTexture(L"GRAY_TX", strTexture);
+		strTexture = DataDir + L"normal3.png";
+		App::GetApp()->RegisterTexture(L"NORMAL3_TX", strTexture);
+
 		//以下オーディオ
 
 		//サウンド
