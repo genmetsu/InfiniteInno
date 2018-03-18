@@ -34,7 +34,7 @@ namespace basecross{
 	void AttackBall::OnCreate() {
 		auto PtrTransform = GetComponent<Transform>();
 
-		PtrTransform->SetScale(0.1f, 0.1f, 0.1f);
+		PtrTransform->SetScale(0.2f, 0.2f, 0.2f);
 		PtrTransform->SetRotation(0, 0, 0);
 		PtrTransform->SetPosition(0, 0, 0);
 
@@ -51,6 +51,7 @@ namespace basecross{
 		auto PtrDraw = AddComponent<BcPNTStaticDraw>();
 		PtrDraw->SetMeshResource(L"DEFAULT_SPHERE");
 		PtrDraw->SetDiffuse(Col4(1.0f, 0, 1.0f, 1.0f));
+		PtrDraw->SetEmissive(Col4(1, 0, 1, 1));
 
 		auto Group = GetStage()->GetSharedObjectGroup(L"AttackBall");
 		Group->IntoGroup(GetThis<AttackBall>());
@@ -82,12 +83,6 @@ namespace basecross{
 		//衝突判定
 		for (auto v : OtherVec) {
 			if (v->FindTag(L"Enemy")) {
-				if (!v->FindTag(L"Infected")) {
-					v->AddTag(L"Infected");
-					auto Group = GetStage()->GetSharedObjectGroup(L"Infected");
-					Group->IntoGroup(v);
-				}
-
 				auto PtrEnemy = dynamic_pointer_cast<EnemyObject>(v);
 				float NowPercent = PtrEnemy->GetInfectedPercent();
 				float NewPercent = NowPercent + 20.0f;
@@ -137,7 +132,9 @@ namespace basecross{
 		//描画するメッシュを設定
 		PtrDraw->SetMeshResource(L"DEFAULT_SPHERE");
 		//描画するテクスチャを設定
-		PtrDraw->SetTextureResource(L"TRACE_TX");
+		//PtrDraw->SetTextureResource(L"TRACE_TX");
+		PtrDraw->SetDiffuse(Col4(0.0f, 0.2f, 1.0f, 1.0f));
+		//PtrDraw->SetEmissive(Col4(0, 1, 0, 1));
 		//透明処理
 		SetAlphaActive(true);
 
@@ -218,8 +215,6 @@ namespace basecross{
 			break;
 		}
 	}
-
-
 
 	//文字列の表示
 	void Player::DrawStrings() {
@@ -343,6 +338,106 @@ namespace basecross{
 		//何もしない
 	}
 
+	//--------------------------------------------------------------------------------------
+	//	class FollowerTargetPoint : public GameObject;
+	//	用途: 味方が向かうポイント
+	//--------------------------------------------------------------------------------------
+	//構築と破棄
+	FollowerTargetPoint::FollowerTargetPoint(const shared_ptr<Stage>& StagePtr) :
+		GameObject(StagePtr)
+	{}
+
+	//初期化
+	void FollowerTargetPoint::OnCreate() {
+
+		//初期位置などの設定
+		auto Ptr = AddComponent<Transform>();
+		Ptr->SetScale(0.5f, 0.5f, 0.5f);
+		Ptr->SetRotation(0.0f, 0.0f, 0.0f);
+		Ptr->SetPosition(0.0f, 0, 1.0f);
+
+		//描画コンポーネントの設定
+		auto PtrDraw = AddComponent<BcPNTStaticDraw>();
+		//描画するメッシュを設定
+		PtrDraw->SetMeshResource(L"DEFAULT_SPHERE");
+		PtrDraw->SetDiffuse(Col4(1, 1, 0, 1));
+		PtrDraw->SetEmissive(Col4(1, 1, 0, 1));
+		//描画するテクスチャを設定
+		//PtrDraw->SetTextureResource(L"TRACE_TX");
+		//透明処理
+		SetAlphaActive(true);
+
+		m_TotalTime = 0.0f;
+
+		m_isSetTarget = false;
+
+		//auto PtrPlayer = GetStage()->GetSharedGameObject<Player>(L"Player");
+		//GetComponent<Transform>()->SetParent(PtrPlayer);
+	}
+
+	//更新
+	void FollowerTargetPoint::OnUpdate() {
+		//前回のターンからの経過時間を求める
+		float ElapsedTime = App::GetApp()->GetElapsedTime();
+		m_TotalTime += ElapsedTime * 10.0f;
+		if (m_TotalTime >= XM_2PI) {
+			m_TotalTime = 0;
+		}
+		auto Pos = GetComponent<Transform>()->GetPosition();
+		Pos.y = (sin(m_TotalTime) + 1.0f) * 0.2f;
+		GetComponent<Transform>()->SetPosition(Pos);
+
+		auto CntlVec = App::GetApp()->GetInputDevice().GetControlerVec();
+		if (CntlVec[0].bConnected) {
+			if (CntlVec[0].wPressedButtons & XINPUT_GAMEPAD_A) {
+				m_isSetTarget = false;
+			}
+			if (m_isSetTarget == false) {
+				if (CntlVec[0].bLeftTrigger > 0.0f) {
+					SetDrawActive(true);
+					//カメラを得る
+					auto PtrCamera = dynamic_pointer_cast<MyCamera>(OnGetDrawCamera());
+					if (PtrCamera) {
+						Vec3 CameraPos = PtrCamera->GetEye();
+
+						if (CntlVec[0].fThumbRY > 0.0f) {
+							Vec3 MoveVec = Pos - CameraPos;
+							MoveVec.normalize();
+							GetComponent<Transform>()->SetPosition(Pos + MoveVec * 0.3f);
+						}
+						if (CntlVec[0].fThumbRY < 0.0f) {
+							Vec3 MoveVec = CameraPos - Pos;
+							MoveVec.normalize();
+							GetComponent<Transform>()->SetPosition(Pos + MoveVec * 0.3f);
+						}
+					}
+					if (CntlVec[0].bRightTrigger > 0.0f) {
+						m_isSetTarget = true;
+					}
+				}
+				else
+				{
+					SetDrawActive(false);
+					//カメラを得る
+					auto PtrCamera = dynamic_pointer_cast<MyCamera>(OnGetDrawCamera());
+					if (PtrCamera) {
+						Vec3 CameraPos = PtrCamera->GetEye();
+						auto PtrPlayer = GetStage()->GetSharedGameObject<Player>(L"Player");
+						Vec3 PlayerPos = PtrPlayer->GetComponent<Transform>()->GetPosition();
+						Vec3 MoveVec = PlayerPos - CameraPos;
+						MoveVec.y = 0.0f;
+						MoveVec.normalize();
+						GetComponent<Transform>()->SetPosition(PlayerPos + MoveVec * 2.0f);
+					}
+					
+				}
+			}
+		}
+	}
+
+	//後更新
+	void FollowerTargetPoint::OnUpdate2() {
+	}
 
 	//--------------------------------------------------------------------------------------
 	//	class CameraTargetPoint : public GameObject;
@@ -366,8 +461,10 @@ namespace basecross{
 		auto PtrDraw = AddComponent<BcPNTStaticDraw>();
 		//描画するメッシュを設定
 		PtrDraw->SetMeshResource(L"DEFAULT_SPHERE");
+		PtrDraw->SetDiffuse(Col4(1, 0, 0, 1));
+		PtrDraw->SetEmissive(Col4(1, 0, 0, 1));
 		//描画するテクスチャを設定
-		PtrDraw->SetTextureResource(L"TRACE_TX");
+		//PtrDraw->SetTextureResource(L"TRACE_TX");
 		//透明処理
 		SetAlphaActive(true);
 
