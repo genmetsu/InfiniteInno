@@ -57,6 +57,10 @@ namespace basecross{
 			//リソースの作成
 			CreateResourses();
 
+			//BGMの再生
+			auto XAPtr = App::GetApp()->GetXAudio2Manager();
+			m_AudioObjectPtr = XAPtr->Start(L"Nanika", XAUDIO2_LOOP_INFINITE, 0.1f);
+
 			//クリアする色を設定
 			Col4 Col;
 			Col.set(180.0f / 255.0f,210.0f / 255.0f,255.0f / 255.0f,255.0f / 255.0f);
@@ -75,6 +79,15 @@ namespace basecross{
 			//最初のアクティブステージの設定
 			ResetActiveStage<GameStage>();
 		}
+	}
+
+	void Scene::OnDestroy() {
+		//親クラスのOnDestroyを呼ぶ
+		SceneBase::OnDestroy();
+
+		auto XAPtr = App::GetApp()->GetXAudio2Manager();
+		XAPtr->Stop(m_AudioObjectPtr);
+
 	}
 
 }
