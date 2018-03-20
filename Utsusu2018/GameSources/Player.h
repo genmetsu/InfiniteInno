@@ -12,6 +12,7 @@ namespace basecross{
 	///	”ò‚ñ‚Å‚¢‚­ƒ{[ƒ‹
 	//--------------------------------------------------------------------------------------
 	class AttackBall : public GameObject {
+
 	public:
 		//\’z‚Æ”jŠü
 		AttackBall(const shared_ptr<Stage>& StagePtr);
