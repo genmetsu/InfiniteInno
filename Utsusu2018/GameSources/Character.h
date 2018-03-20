@@ -68,11 +68,18 @@ namespace basecross{
 		float m_RadiusMax;
 		float m_RadiusMin;
 
+		//プレイヤーを見つけられる距離
+		float m_SearchDistance;
+		//プレイヤーとの敵対スピード
+		float m_OppositionSpeed;
+		//感染後の行動スピード
+		float m_InfectedSpeed;
 		//感染範囲
 		float m_InfectionLength;
 		//感染率,最大100.0f
 		float m_InfectedPercent;
-
+		//階層化ステートマシーン
+		unique_ptr<LayeredStateMachine<EnemyObject>>  m_StateMachine;
 	public:
 		//構築と破棄
 		EnemyObject(const shared_ptr<Stage>& StagePtr, const Vec3& StartPos);
@@ -84,11 +91,17 @@ namespace basecross{
 
 		void Move();
 
+		//感染率のチェック
+		void CheckInfection();
+
 		//周りに感染させる
 		void Infect();
 
 		//感染させる移動
 		void ToInfectMove();
+
+		//プレイヤーに向かう行動
+		void ToPlayerMove();
 
 		//感染率によって色を変える
 		void ColorChangeByInfection();
@@ -110,6 +123,60 @@ namespace basecross{
 		void SetInfectedPercent(float value) {
 			m_InfectedPercent = value;
 		}
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	ステートマシンを得る
+		@return	ステートマシン
+		*/
+		//--------------------------------------------------------------------------------------
+		unique_ptr<LayeredStateMachine<EnemyObject>>& GetStateMachine() {
+			return m_StateMachine;
+		}
+	};
+
+	//--------------------------------------------------------------------------------------
+	/// 敵通常ステート
+	//--------------------------------------------------------------------------------------
+	class EnemyDefaultState : public ObjState<EnemyObject>
+	{
+		EnemyDefaultState() {}
+	public:
+		//ステートのインスタンス取得
+		DECLARE_SINGLETON_INSTANCE(EnemyDefaultState)
+		virtual wstring GetStateName()const { return L"EnemyDefaultState"; }
+		virtual void Enter(const shared_ptr<EnemyObject>& Obj)override;
+		virtual void Execute(const shared_ptr<EnemyObject>& Obj)override;
+		virtual void Exit(const shared_ptr<EnemyObject>& Obj)override;
+	};
+
+	//--------------------------------------------------------------------------------------
+	///	敵、敵対ステート
+	//--------------------------------------------------------------------------------------
+	class EnemyOppositionState : public ObjState<EnemyObject>
+	{
+		EnemyOppositionState() {}
+	public:
+		//ステートのインスタンス取得
+		DECLARE_SINGLETON_INSTANCE(EnemyOppositionState)
+		virtual wstring GetStateName()const { return L"EnemyOppositionState"; }
+		virtual void Enter(const shared_ptr<EnemyObject>& Obj)override;
+		virtual void Execute(const shared_ptr<EnemyObject>& Obj)override;
+		virtual void Exit(const shared_ptr<EnemyObject>& Obj)override;
+	};
+
+	//--------------------------------------------------------------------------------------
+	///	敵が感染率が100%になり味方になった時のステート
+	//--------------------------------------------------------------------------------------
+	class EnemyInfectedState : public ObjState<EnemyObject>
+	{
+		EnemyInfectedState() {}
+	public:
+		//ステートのインスタンス取得
+		DECLARE_SINGLETON_INSTANCE(EnemyInfectedState)
+		virtual wstring GetStateName()const { return L"EnemyInfectedState"; }
+		virtual void Enter(const shared_ptr<EnemyObject>& Obj)override;
+		virtual void Execute(const shared_ptr<EnemyObject>& Obj)override;
+		virtual void Exit(const shared_ptr<EnemyObject>& Obj)override;
 	};
 
 }

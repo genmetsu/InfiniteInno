@@ -103,6 +103,9 @@ namespace basecross{
 		GameObject(StagePtr),
 		m_StartPos(StartPos)
 	{
+		m_OppositionSpeed = 3.0f;
+		m_InfectedSpeed = 2.0f;
+		m_SearchDistance = 4.0f;
 		m_InfectionLength = 3.0f;
 		m_InfectedPercent = 0.0f;
 	}
@@ -141,18 +144,28 @@ namespace basecross{
 		auto Group = GetStage()->GetSharedObjectGroup(L"Enemy");
 		Group->IntoGroup(GetThis<EnemyObject>());
 
+		//ステートマシンの構築
+		m_StateMachine.reset(new LayeredStateMachine<EnemyObject>(GetThis<EnemyObject>()));
+		//最初のステートをPlayerDefaultにリセット
+		m_StateMachine->Reset(EnemyDefaultState::Instance());
+
 		AddTag(L"Enemy");
 	}
 	//更新処理
 	void EnemyObject::OnUpdate() {
-		if (m_InfectedPercent < 100.0f) {
-			Move();
-		}
-		else if (m_InfectedPercent >= 100.0f) {
-			ToTargetPoint();
-		}
+		//ステートマシン更新
+		m_StateMachine->Update();
+		//感染率で色を変える
 		ColorChangeByInfection();
+		//まわりに感染させる処理
 		Infect();
+	}
+
+	void EnemyObject::CheckInfection() {
+		if (m_InfectedPercent >= 100.0f) {
+			m_StateMachine->Push(EnemyInfectedState::Instance());
+			return;
+		}
 	}
 
 	void EnemyObject::Move(){
@@ -175,7 +188,7 @@ namespace basecross{
 			MoveVec.y = 0.0f;
 			MoveVec.normalize();
 			auto PtrRigid = GetComponent<Rigidbody>();
-			PtrRigid->SetVelocity(MoveVec * 2.0f);
+			PtrRigid->SetVelocity(MoveVec * m_InfectedSpeed);
 		}
 		else {
 			ToInfectMove();
@@ -206,7 +219,23 @@ namespace basecross{
 			}
 		}
 		auto PtrRigid = GetComponent<Rigidbody>();
-		PtrRigid->SetVelocity(MoveVec * 2.0f);
+		PtrRigid->SetVelocity(MoveVec * m_InfectedSpeed);
+	}
+
+	//プレイヤーに向かう処理
+	void EnemyObject::ToPlayerMove() {
+		//距離を測る
+		auto PtrPlayer = GetStage()->GetSharedGameObject<Player>(L"Player");
+		Vec3 PlayerPos = PtrPlayer->GetComponent<Transform>()->GetPosition();
+		Vec3 MyPos = GetComponent<Transform>()->GetPosition();
+		float distance = (PlayerPos - MyPos).length();
+		//距離が設定未満ならプレイヤーに向かう
+		if (distance < m_SearchDistance) {
+			Vec3 MoveVec = PlayerPos - MyPos;
+			MoveVec.normalize();
+			auto PtrRigid = GetComponent<Rigidbody>();
+			PtrRigid->SetVelocity(MoveVec);
+		}
 	}
 
 	void EnemyObject::ColorChangeByInfection() {
@@ -256,6 +285,55 @@ namespace basecross{
 				m_InfectedPercent = 100.0f;
 			}
 		}
+	}
+
+	//--------------------------------------------------------------------------------------
+	///	通常ステート
+	//--------------------------------------------------------------------------------------
+	IMPLEMENT_SINGLETON_INSTANCE(EnemyDefaultState)
+	void EnemyDefaultState::Enter(const shared_ptr<EnemyObject>& Obj) {
+		
+	}
+
+	void EnemyDefaultState::Execute(const shared_ptr<EnemyObject>& Obj) {
+		Obj->CheckInfection();
+		Obj->Move();
+	}
+
+	void EnemyDefaultState::Exit(const shared_ptr<EnemyObject>& Obj) {
+		
+	}
+
+	//--------------------------------------------------------------------------------------
+	///	敵、敵対ステート
+	//--------------------------------------------------------------------------------------
+	IMPLEMENT_SINGLETON_INSTANCE(EnemyOppositionState)
+	void EnemyOppositionState::Enter(const shared_ptr<EnemyObject>& Obj) {
+		
+	}
+
+	void EnemyOppositionState::Execute(const shared_ptr<EnemyObject>& Obj) {
+		Obj->ToPlayerMove();
+	}
+
+	void EnemyOppositionState::Exit(const shared_ptr<EnemyObject>& Obj) {
+		
+	}
+
+	//--------------------------------------------------------------------------------------
+	///	敵が感染率が100%になり味方になった時のステート
+	//--------------------------------------------------------------------------------------
+	IMPLEMENT_SINGLETON_INSTANCE(EnemyInfectedState)
+	void EnemyInfectedState::Enter(const shared_ptr<EnemyObject>& Obj) {
+		
+	}
+
+	void EnemyInfectedState::Execute(const shared_ptr<EnemyObject>& Obj) {
+		Obj->ToTargetPoint();
+	}
+
+	void EnemyInfectedState::Exit(const shared_ptr<EnemyObject>& Obj) {
+		
 	}
 
 }
