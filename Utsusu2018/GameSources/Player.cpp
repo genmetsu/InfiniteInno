@@ -101,7 +101,9 @@ namespace basecross{
 	//構築と破棄
 	Player::Player(const shared_ptr<Stage>& StagePtr) :
 		GameObject(StagePtr)
-	{}
+	{
+		m_HP = 100.0f;
+	}
 
 	//初期化
 	void Player::OnCreate() {
@@ -137,10 +139,6 @@ namespace basecross{
 		//PtrDraw->SetEmissive(Col4(0, 1, 0, 1));
 		//透明処理
 		SetAlphaActive(true);
-
-		//サウンドを登録.
-		auto pMultiSoundEffect = AddComponent<MultiSoundEffect>();
-		pMultiSoundEffect->AddAudioResource(L"cursor");
 
 		//カメラを得る
 		auto PtrCamera = dynamic_pointer_cast<MyCamera>(OnGetDrawCamera());
@@ -299,12 +297,9 @@ namespace basecross{
 	///	ジャンプステート
 	//--------------------------------------------------------------------------------------
 	IMPLEMENT_SINGLETON_INSTANCE(PlayerJumpState)
-
-		void PlayerJumpState::Enter(const shared_ptr<Player>& Obj) {
+	void PlayerJumpState::Enter(const shared_ptr<Player>& Obj) {
 		auto PtrGrav = Obj->GetBehavior<Gravity>();
 		PtrGrav->StartJump(Vec3(0, 4.0f, 0));
-		auto pMultiSoundEffect = Obj->GetComponent<MultiSoundEffect>();
-		pMultiSoundEffect->Start(L"cursor", 0, 0.5f);
 	}
 
 	void PlayerJumpState::Execute(const shared_ptr<Player>& Obj) {

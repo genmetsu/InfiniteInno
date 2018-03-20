@@ -40,6 +40,9 @@ namespace basecross{
 		void DrawStrings();
 		//入力ハンドラー
 		InputHandler<Player> m_InputHandler;
+
+		float m_HP;
+
 		//プレイヤーのAボタンによる行動
 		PlayerAction m_PlayerAction;
 		//階層化ステートマシーン
@@ -77,6 +80,14 @@ namespace basecross{
 		virtual void OnUpdate2() override;
 		//衝突時
 		virtual void OnCollision(vector<shared_ptr<GameObject>>& OtherVec) override;
+
+		float GetHP() {
+			return m_HP;
+		}
+		void SetHP(float value) {
+			m_HP = value;
+		}
+
 		//Lボタン
 		void OnPushRightSoulder();
 		//Bボタン
