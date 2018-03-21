@@ -213,6 +213,32 @@ namespace basecross{
 		virtual void Exit(const shared_ptr<Player>& Obj)override;
 	};
 
+	//--------------------------------------------------------------------------------------
+	///	プレイヤーのHPゲージスプライト(緑の部分)
+	//--------------------------------------------------------------------------------------
+	class HPGaugeSprite : public GameObject {
+		bool m_Trace;
+		Vec2 m_StartScale;
+		Vec3 m_StartPos;
+		float m_TotalTime;
+		wstring m_Media;
+
+		float m_GaugeSize;
+		float m_DefaultGaugeSize;
+
+		vector<VertexPositionTexture> m_BackupVertices;
+	public:
+		HPGaugeSprite(const shared_ptr<Stage> & 
+			StagePtr, bool Trace,
+			const Vec3& StartPos, const wstring& Media);
+
+		virtual ~HPGaugeSprite();
+		virtual void OnCreate() override;
+		virtual void OnUpdate() override;
+
+		void GetPlayerHP();
+	};
+
 }
 //end basecross
 

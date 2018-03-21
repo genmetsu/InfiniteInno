@@ -475,6 +475,59 @@ namespace basecross{
 	void CameraTargetPoint::OnUpdate2() {
 	}
 
+	//--------------------------------------------------------------------------------------
+	//	HPゲージスプライト(緑の部分)
+	//--------------------------------------------------------------------------------------
+	HPGaugeSprite::HPGaugeSprite(const shared_ptr<Stage>& StagePtr, bool Trace,
+		const Vec3 & StartPos, const wstring& Media) :
+		GameObject(StagePtr),
+		m_Trace(Trace),
+		m_StartPos(StartPos),
+		m_Media(Media),
+		m_TotalTime(0)
+	{
+		m_GaugeSize = 300.0f;
+		m_DefaultGaugeSize = m_GaugeSize;
+	}
+	//破棄
+	HPGaugeSprite::~HPGaugeSprite() {}
+
+	void HPGaugeSprite::OnCreate() {
+		float HalfSize = 0.5f;
+		//頂点の配列
+		m_BackupVertices = {
+			{ VertexPositionTexture(Vec3(-0,HalfSize,0),Vec2(0,0)) },
+			{ VertexPositionTexture(Vec3(HalfSize*2.0f,HalfSize,0),Vec2(1,0)) },
+			{ VertexPositionTexture(Vec3(-0,-HalfSize,0),Vec2(0,1)) },
+			{ VertexPositionTexture(Vec3(HalfSize*2.0f,-HalfSize,0),Vec2(1,1)) },
+		};
+
+		//インデックス配列
+		vector<uint16_t> indices = { 0, 1, 2, 1 ,3 ,2 };
+		SetAlphaActive(m_Trace);
+		auto PtrTransform = GetComponent<Transform>();
+		PtrTransform->SetScale(m_DefaultGaugeSize, 26.0f* 1.2f, 1.0f);
+		PtrTransform->SetRotation(0, 0, 0);
+		PtrTransform->SetPivot(0.0f, 0.0f, 0.0f);
+		PtrTransform->SetPosition(m_StartPos);
+
+		//頂点とインデックスを指定してスプライト作成
+		auto Ptr = AddComponent<PTSpriteDraw>(m_BackupVertices, indices);
+		Ptr->SetSamplerState(SamplerState::LinearWrap);
+		Ptr->SetTextureResource(m_Media);
+	}
+
+	void HPGaugeSprite::OnUpdate() {
+		GetPlayerHP();
+		auto PtrTransform = GetComponent<Transform>();
+		PtrTransform->SetScale(m_GaugeSize, 26.0f* 1.2f, 1.0f);
+	}
+
+	void HPGaugeSprite::GetPlayerHP() {
+		auto PtrPlayer = GetStage()->GetSharedGameObject<Player>(L"Player");
+		float NowHP = PtrPlayer->GetHP();
+		m_GaugeSize = m_DefaultGaugeSize * NowHP / 100.0f;
+	}
 }
 //end basecross
 
