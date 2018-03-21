@@ -139,6 +139,8 @@ namespace basecross {
 
 		auto PtrPoint = AddGameObject<FollowerTargetPoint>();
 		SetSharedGameObject(L"FollowerTargetPoint", PtrPoint);
+
+		AddGameObject<HPGaugeSprite>(true, Vec3(-600.0f,300.0f, 0.0f), L"RED_TX");
 	}
 
 	void GameStage::CreateEnemy() {
