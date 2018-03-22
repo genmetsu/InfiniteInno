@@ -171,7 +171,6 @@ namespace basecross{
 	void EnemyObject::Move(){
 		auto PtrTrans = GetComponent<Transform>();
 		Vec3 Pos = PtrTrans->GetPosition();
-
 		Pos.x = m_StartPos.x + cosf(m_Radian) * m_Radius;
 		Pos.z = m_StartPos.z  + sinf(m_Radian) * m_Radius;
 		m_Radian += m_Speed * 3.1415f / 180.0f;
@@ -222,6 +221,19 @@ namespace basecross{
 		PtrRigid->SetVelocity(MoveVec * m_InfectedSpeed);
 	}
 
+	//プレイヤーを探す処理
+	void EnemyObject::SearchPlayer() {
+		//距離を測る
+		auto PtrPlayer = GetStage()->GetSharedGameObject<Player>(L"Player");
+		Vec3 PlayerPos = PtrPlayer->GetComponent<Transform>()->GetPosition();
+		Vec3 MyPos = GetComponent<Transform>()->GetPosition();
+		float distance = (PlayerPos - MyPos).length();
+		if (distance < m_SearchDistance) {
+			m_StateMachine->Push(EnemyOppositionState::Instance());
+			return;
+		}
+	}
+
 	//プレイヤーに向かう処理
 	void EnemyObject::ToPlayerMove() {
 		//距離を測る
@@ -231,11 +243,21 @@ namespace basecross{
 		float distance = (PlayerPos - MyPos).length();
 		//距離が設定未満ならプレイヤーに向かう
 		if (distance < m_SearchDistance) {
+
+
 			Vec3 MoveVec = PlayerPos - MyPos;
 			MoveVec.normalize();
 			auto PtrRigid = GetComponent<Rigidbody>();
 			PtrRigid->SetVelocity(MoveVec);
 		}
+	}
+
+	//プレイヤーにダメージを与える処理
+	void EnemyObject::ToPlayerDamage() {
+		auto PtrPlayer = GetStage()->GetSharedGameObject<Player>(L"Player");
+		float PlayerHp = PtrPlayer->GetHP();
+		PlayerHp -= 10.0f;
+		PtrPlayer->SetHP(PlayerHp);
 	}
 
 	void EnemyObject::ColorChangeByInfection() {
@@ -298,6 +320,7 @@ namespace basecross{
 	void EnemyDefaultState::Execute(const shared_ptr<EnemyObject>& Obj) {
 		Obj->CheckInfection();
 		Obj->Move();
+		Obj->SearchPlayer();
 	}
 
 	void EnemyDefaultState::Exit(const shared_ptr<EnemyObject>& Obj) {
@@ -309,10 +332,10 @@ namespace basecross{
 	//--------------------------------------------------------------------------------------
 	IMPLEMENT_SINGLETON_INSTANCE(EnemyOppositionState)
 	void EnemyOppositionState::Enter(const shared_ptr<EnemyObject>& Obj) {
-		
 	}
 
 	void EnemyOppositionState::Execute(const shared_ptr<EnemyObject>& Obj) {
+		Obj->CheckInfection();
 		Obj->ToPlayerMove();
 	}
 

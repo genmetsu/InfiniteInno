@@ -100,8 +100,14 @@ namespace basecross{
 		//感染させる移動
 		void ToInfectMove();
 
+		//プレイヤーを探す
+		void SearchPlayer();
+
 		//プレイヤーに向かう行動
 		void ToPlayerMove();
+
+		//プレイヤーにダメージを与える
+		void ToPlayerDamage();
 
 		//感染率によって色を変える
 		void ColorChangeByInfection();
