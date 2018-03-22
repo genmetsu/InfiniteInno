@@ -43,7 +43,7 @@ namespace basecross{
 		InputHandler<Player> m_InputHandler;
 
 		float m_HP;
-
+		
 		//プレイヤーのAボタンによる行動
 		PlayerAction m_PlayerAction;
 		//階層化ステートマシーン
@@ -88,6 +88,11 @@ namespace basecross{
 		void SetHP(float value) {
 			m_HP = value;
 		}
+
+		//自然回復
+		void NaturalCure();
+		//味方の近くにいたら回復
+		void FriendCure();
 
 		//Lボタン
 		void OnPushRightSoulder();

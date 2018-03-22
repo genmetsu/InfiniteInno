@@ -179,5 +179,26 @@ namespace basecross{
 		virtual void Exit(const shared_ptr<EnemyObject>& Obj)override;
 	};
 
+
+	//--------------------------------------------------------------------------------------
+	//	class CureObject : public GameObject;
+	//	用途: 回復アイテム
+	//--------------------------------------------------------------------------------------
+	class CureObject : public GameObject {
+		Vec3 m_StartPos;
+		float m_CurePower;
+
+	public:
+		//構築と破棄
+		CureObject(const shared_ptr<Stage>& StagePtr, const Vec3& StartPos);
+		virtual ~CureObject();
+		//初期化
+		virtual void OnCreate() override;
+		//操作
+
+		virtual void OnUpdate() override;
+
+		void Cure();
+	};
 }
 //end basecross
