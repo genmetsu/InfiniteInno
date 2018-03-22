@@ -336,5 +336,59 @@ namespace basecross{
 		
 	}
 
+	//--------------------------------------------------------------------------------------
+	//	class CureObject : public GameObject;
+	//	用途: 回復アイテム
+	//--------------------------------------------------------------------------------------
+	//構築と破棄
+	CureObject::CureObject(const shared_ptr<Stage>& StagePtr, const Vec3& StartPos) :
+		GameObject(StagePtr),
+		m_StartPos(StartPos)
+	{
+	//回復力
+		m_CurePower = 10.0f;
+	}
+	CureObject::~CureObject() {}
+	//初期化
+	void CureObject::OnCreate() {
+		auto PtrTransform = GetComponent<Transform>();
+		PtrTransform->SetPosition(m_StartPos);
+		PtrTransform->SetScale(1.0f, 1.0f, 1.0f);
+		PtrTransform->SetRotation(0.0f, 0.0f, 0.0f);
+		//操舵系のコンポーネントをつける場合はRigidbodyをつける
+		auto PtrRegid = AddComponent<Rigidbody>();
+		//Sphereの衝突判定をつける
+		auto CollPtr = AddComponent<CollisionSphere>();
+		CollPtr->SetFixed(true);
+		//影をつける
+		auto ShadowPtr = AddComponent<Shadowmap>();
+		ShadowPtr->SetMeshResource(L"DEFAULT_SPHERE");
+		auto PtrDraw = AddComponent<BcPNTStaticDraw>();
+		PtrDraw->SetFogEnabled(true);
+		PtrDraw->SetMeshResource(L"DEFAULT_SPHERE");
+		PtrDraw->SetTextureResource(L"WALL_TX");
+
+		AddTag(L"CureObject");
+
+		
+	}
+	//更新処理
+	void CureObject::OnUpdate() {
+		
+	}
+
+	void CureObject::Cure() {
+		auto PtrPlayer = GetStage()->GetSharedGameObject<Player>(L"Player");
+		float HP = PtrPlayer->GetHP();
+	
+		HP += m_CurePower;
+		
+		PtrPlayer->SetHP(HP);
+
+		SetDrawActive(false);
+		SetUpdateActive(false);
+	}
+
+
 }
 //end basecross

@@ -178,6 +178,14 @@ namespace basecross {
 		SetSharedGameObject(L"InfectParticle", InfectParticlePtr);
 	}
 
+	//回復アイテム
+	void GameStage::CreateCureObject() {
+
+		auto PtrCureObject = AddGameObject<CureObject>(Vec3(0, 0, 2.0f));
+		SetSharedGameObject(L"CureObject", PtrCureObject);
+
+	}
+
 	void GameStage::OnCreate() {
 		try {
 			//ビューとライトの作成
@@ -190,6 +198,8 @@ namespace basecross {
 			CreateEnemy();
 			//ターゲットの作成
 			CreateTarget();
+			//回復するアイテムの作成
+			CreateCureObject();
 
 			CreateParticle();
 		}
