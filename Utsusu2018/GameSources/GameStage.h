@@ -23,6 +23,8 @@ namespace basecross {
 		void CreateTarget();
 		//パーティクルの作成
 		void CreateParticle();
+		//回復するアイテムの作成
+		void CreateCureObject();
 	public:
 		//構築と破棄
 		GameStage() :Stage() {}

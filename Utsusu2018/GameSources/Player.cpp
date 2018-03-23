@@ -154,6 +154,7 @@ namespace basecross{
 		m_StateMachine.reset(new LayeredStateMachine<Player>(GetThis<Player>()));
 		//最初のステートをPlayerDefaultにリセット
 		m_StateMachine->Reset(PlayerDefaultState::Instance());
+
 	}
 
 	//更新
@@ -162,6 +163,11 @@ namespace basecross{
 		m_InputHandler.PushHandle(GetThis<Player>());
 		//ステートマシン更新
 		m_StateMachine->Update();
+
+		//自然回復
+		NaturalCure();
+		//味方の近くにいたら回復
+		FriendCure();
 	}
 
 	//後更新
@@ -184,6 +190,14 @@ namespace basecross{
 		if (GetStateMachine()->GetTopState() == PlayerJumpState::Instance()) {
 			//現在がジャンプステートか移動ボックスステートならPlayerDefaultにリセット
 			GetStateMachine()->Reset(PlayerDefaultState::Instance());
+		}
+
+		//当たった相手が回復アイテムかどうか調べている。
+		for (shared_ptr<GameObject> gameObject : OtherVec) {
+			if (gameObject->FindTag(L"CureObject")) {
+				auto PtrCureObject = dynamic_pointer_cast<CureObject>(gameObject);
+				PtrCureObject->Cure();
+			}
 		}
 	}
 
@@ -212,6 +226,21 @@ namespace basecross{
 			m_PlayerAction = PlayerAction::Jump;
 			break;
 		}
+	}
+
+	//体力を自然回復する
+	void Player::NaturalCure(){
+		if (m_HP < 100.0f) {
+			m_HP += 0.05f;
+		}
+		if (m_HP > 100.0f) {
+			m_HP = 100.0f;
+		}
+	}
+
+	//味方の近くにいたら回復する
+	void Player::FriendCure() {
+		
 	}
 
 	//文字列の表示
@@ -528,6 +557,8 @@ namespace basecross{
 		float NowHP = PtrPlayer->GetHP();
 		m_GaugeSize = m_DefaultGaugeSize * NowHP / 100.0f;
 	}
+
+
 }
 //end basecross
 
